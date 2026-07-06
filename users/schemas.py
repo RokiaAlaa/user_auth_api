@@ -23,3 +23,10 @@ class TokenSchema(Schema):
 
 class RefreshSchema(Schema):
     refresh_token: str
+
+class UserUpdateSchema(Schema):
+    email: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None

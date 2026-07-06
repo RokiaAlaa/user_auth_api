@@ -58,3 +58,14 @@ class JWTAuth(HttpBearer):
         return user
 
 jwt_auth = JWTAuth()
+
+class AdminJWTAuth(JWTAuth):
+    def authenticate(self, request, token):
+        user = super().authenticate(request, token)
+
+        if not user or not user.is_superuser:
+            return None
+
+        return user
+        
+admin_jwt_auth = AdminJWTAuth()
