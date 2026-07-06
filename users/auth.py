@@ -2,6 +2,10 @@ import os
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
+from ninja.security import HttpBearer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
@@ -29,8 +33,28 @@ def create_refresh_token(user_id: int) -> str:
 
 
 def decode_token(token: str) -> dict:
-
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         raise ValueError('Invalid or expired token')
+    
+class JWTAuth(HttpBearer):
+    def authenticate(self, request, token):
+        try:
+            payload = decode_token(token)
+        except ValueError:
+            return None
+        else:
+            if payload['type'] != 'access':
+                return None
+            
+        user_id = int(payload['sub'])
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return None
+        
+        return user
+
+jwt_auth = JWTAuth()
