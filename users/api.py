@@ -61,6 +61,16 @@ def update_user(request, user_id: int, data: UserUpdateSchema):
     
     update_data = data.model_dump(exclude_unset=True)
 
+    if 'username' in update_data:
+        exist = User.objects.filter(username=update_data['username']).exclude(id=user_id).exists()
+        if exist:
+            raise HttpError(400, 'username already taken')
+    
+    if 'email' in update_data:
+        exist = User.objects.filter(email=update_data['email']).exclude(id=user_id).exists()
+        if exist:
+            raise HttpError(400, 'email already taken')
+    
     for field, value in update_data.items():
         setattr(user, field, value)
 

@@ -6,6 +6,8 @@ class RegisterSchema(Schema):
     username: str
     email: EmailStr
     password: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 class LoginSchema(Schema):
     username: str
@@ -26,6 +28,7 @@ class RefreshSchema(Schema):
 
 class UserUpdateSchema(Schema):
     email: Optional[str] = None
+    username: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     is_active: Optional[bool] = None
