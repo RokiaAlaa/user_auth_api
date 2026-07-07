@@ -110,6 +110,5 @@ def refresh_token(request, data: RefreshSchema):
     user_id = int(payload['sub'])
 
     access_token = create_access_token(user_id)
-    refresh_token = create_refresh_token(user_id)
 
-    return {'access_token':access_token, 'refresh_token':refresh_token}
+    return {'access_token':access_token, 'refresh_token': data.refresh_token}
