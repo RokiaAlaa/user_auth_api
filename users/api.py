@@ -5,6 +5,7 @@ from .auth import hash_password, verify_password, create_access_token, create_re
 from ninja.errors import HttpError
 from .auth import jwt_auth, admin_jwt_auth
 from typing import List
+from .events import publish_user_deleted, publish_user_registered, publish_user_updated
 
 User = get_user_model()
 router = Router()
@@ -25,6 +26,7 @@ def register(request, data: RegisterSchema):
     user = User.objects.create(username=data.username, email=data.email, password=hashed_password)
     # user = User.objects.create_user(username=data.username, email=data.email, password=data.password)
 
+    publish_user_registered(user.id, user.username)
     return user
 
 @router.post('/login', response=TokenSchema)
@@ -75,6 +77,8 @@ def update_user(request, user_id: int, data: UserUpdateSchema):
         setattr(user, field, value)
 
     user.save()
+
+    publish_user_updated(user.id, user.username)
     return user
     
 @router.delete('/users/{user_id}', auth=admin_jwt_auth)
@@ -84,8 +88,12 @@ def delete_user(request, user_id: int):
     except User.DoesNotExist:
         raise HttpError(404, 'user not found')
 
+    deleted_id = user.id
+    deleted_username = user.username
+
     user.delete()
 
+    publish_user_deleted(deleted_id, deleted_username)
     # return 204
     return {'success': True}
 
