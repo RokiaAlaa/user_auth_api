@@ -42,6 +42,19 @@ services:
       timeout: 5s
       retries: 5
 
+  consumer:
+    build: .
+    command: python manage.py consume_events
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
 
 volumes:
   postgres_data:
