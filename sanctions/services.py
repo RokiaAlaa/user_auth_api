@@ -7,11 +7,13 @@ import io
 SDN_URL = 'https://www.treasury.gov/ofac/downloads/sdn.csv'
 ALT_URL = 'https://www.treasury.gov/ofac/downloads/alt.csv'
 
-def sync_sdn_data():
+def sync_sdn_data(sdn_text=None, alt_text=None):
 
-    response = requests.get(SDN_URL)
-    response.raise_for_status()
-    sdn_text = response.text
+    if sdn_text is None:
+        response = requests.get(SDN_URL)
+        response.raise_for_status()
+        sdn_text = response.text
+
 
     reader = csv.reader(io.StringIO(sdn_text))
 
@@ -47,9 +49,10 @@ def sync_sdn_data():
     
     new_entries = after - before
 
-    response = requests.get(ALT_URL)
-    response.raise_for_status()
-    alt_text = response.text
+    if alt_text is None:
+        response = requests.get(ALT_URL)
+        response.raise_for_status()
+        alt_text = response.text
 
     entries_map = {entry.uid: entry for entry in SDNEntry.objects.all()}
 
