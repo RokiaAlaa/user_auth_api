@@ -76,8 +76,10 @@ def sync_sdn_data():
 
         aliases_to_create.append(alias)
 
+    before = Alias.objects.count()
     Alias.objects.bulk_create(aliases_to_create, ignore_conflicts=True)
-
-    created_aliases = len(aliases_to_create)
+    after = Alias.objects.count()
+    
+    created_aliases = after - before
 
     return {'parsed_entries' : parsed_entries, 'new_entries': new_entries, 'created_aliases': created_aliases}

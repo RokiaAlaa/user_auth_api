@@ -14,3 +14,6 @@ class Alias(models.Model):
     alias_name = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('entry', 'alias_type', 'alias_name')
