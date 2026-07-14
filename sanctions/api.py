@@ -4,6 +4,8 @@ from django.db.models import Max, Q
 from .models import SDNEntry, Alias
 from .schemas import SearchResultSchema, MatchedAliasSchema
 from typing import List
+from django.core.cache import cache
+import hashlib
 
 router = Router()
 
@@ -11,6 +13,14 @@ MIN_SIMILARITY = 0.3
 
 @router.get('/search', response=List[SearchResultSchema])
 def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
+
+    cache_key = f'search:{name.lower()}:{page}:{page_size}'
+
+    cached_result = cache.get(cache_key)
+    
+    if cached_result:
+        return cached_result
+
     entries = SDNEntry.objects.filter(name__trigram_similar=name).annotate(
         similarity=TrigramSimilarity('name', name)
     ).filter(similarity__gte=MIN_SIMILARITY)
@@ -55,7 +65,7 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
     for result in paged_results:
 
         uid = result['entry'].uid
-        name = result['entry'].name
+        entry_name = result['entry'].name
         entity_type = result['entry'].entity_type
         program = result['entry'].program
         similarity = result['similarity']
@@ -67,11 +77,13 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
 
         final_results.append({
             'uid' : uid,
-            'name' : name,
+            'name' : entry_name,
             'entity_type' : entity_type,
             'program' : program,
             'similarity' : similarity,
             'matched_aliases' : matched_aliases
         })
+
+    cache.set(cache_key, final_results, timeout=300)
 
     return final_results
