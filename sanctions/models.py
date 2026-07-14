@@ -26,3 +26,10 @@ class Alias(models.Model):
         indexes = [
             GinIndex(fields=['alias_name'], name='alias_name_trgm_idx', opclasses=['gin_trgm_ops'])
         ]
+
+class SyncLog(models.Model):
+    synced_at = models.DateTimeField(auto_now_add=True)
+    parsed_entries = models.IntegerField()
+    new_entries = models.IntegerField()
+    removed_entries = models.IntegerField()
+    new_aliases = models.IntegerField()

@@ -16,4 +16,4 @@ class SyncSdnDataTests(TestCase):
 
         self.assertEqual(SDNEntry.objects.count(), 2)
         self.assertEqual(Alias.objects.count(), 2)
-        self.assertEqual(result, {'parsed_entries' : 2, 'new_entries': 2, 'created_aliases': 2})
+        self.assertEqual(result, {'parsed_entries' : 2, 'new_entries': 2, 'removed_entries': 0, 'created_aliases': 2})

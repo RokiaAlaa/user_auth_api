@@ -14,10 +14,11 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
         response.raise_for_status()
         sdn_text = response.text
 
+    existing_uids_before = set(SDNEntry.objects.values_list('uid', flat=True))
 
     reader = csv.reader(io.StringIO(sdn_text))
-
     entries_to_create = []
+    parsed_uids = set()
 
     for row in reader:
 
@@ -37,10 +38,10 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
         except ValueError:
             continue
 
+        parsed_uids.add(uid)
         entry = SDNEntry(uid=uid, name=name, entity_type=entity_type, program=program)
-
         entries_to_create.append(entry)
- 
+
     parsed_entries = len(entries_to_create)
 
     before = SDNEntry.objects.count()
@@ -49,6 +50,12 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
     
     new_entries = after - before
 
+    removed_uids = existing_uids_before - parsed_uids
+    SDNEntry.objects.filter(uid__in=removed_uids).delete()
+    removed_count = len(removed_uids)
+
+
+    
     if alt_text is None:
         response = requests.get(ALT_URL)
         response.raise_for_status()
@@ -85,4 +92,4 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
     
     created_aliases = after - before
 
-    return {'parsed_entries' : parsed_entries, 'new_entries': new_entries, 'created_aliases': created_aliases}
+    return {'parsed_entries' : parsed_entries, 'new_entries': new_entries, 'removed_entries': removed_count, 'created_aliases': created_aliases}
