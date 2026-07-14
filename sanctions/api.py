@@ -11,11 +11,11 @@ MIN_SIMILARITY = 0.3
 
 @router.get('/search', response=List[SearchResultSchema])
 def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
-    entries = SDNEntry.objects.annotate(
+    entries = SDNEntry.objects.filter(name__trigram_similar=name).annotate(
         similarity=TrigramSimilarity('name', name)
     ).filter(similarity__gte=MIN_SIMILARITY)
 
-    aliases = Alias.objects.select_related('entry').annotate(
+    aliases = Alias.objects.select_related('entry').filter(alias_name__trigram_similar=name).annotate(
         similarity=TrigramSimilarity('alias_name', name)
     ).filter(similarity__gte=MIN_SIMILARITY) 
 
