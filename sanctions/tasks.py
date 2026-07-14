@@ -9,6 +9,7 @@ def sync_sdn_task():
         f"SDN sync complete. "
         f"Parsed {result['parsed_entries']}, "
         f"New entries: {result['new_entries']}, "
+        f"Removed entries: {result['removed_entries']}, "
         f"New aliases: {result['created_aliases']}"
 
     )

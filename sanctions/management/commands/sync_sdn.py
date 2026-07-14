@@ -12,4 +12,5 @@ class Command(BaseCommand):
 
         self.stdout.write(f'Parsed {result['parsed_entries']} individual entries')
         self.stdout.write(f'Saved {result['new_entries']} new entries')
+        self.stdout.write(f'removed {result['removed_entries']} entries')
         self.stdout.write(f'Saved {result['created_aliases']} new aliases')

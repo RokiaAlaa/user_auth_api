@@ -1,5 +1,5 @@
 import requests
-from .models import SDNEntry, Alias
+from .models import SDNEntry, Alias, SyncLog
 import csv
 import io
 
@@ -91,5 +91,13 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
     after = Alias.objects.count()
     
     created_aliases = after - before
+
+    SyncLog.objects.create(
+        parsed_entries=parsed_entries,
+        new_entries=new_entries,
+        removed_entries=removed_count,
+        new_aliases=created_aliases
+
+    )
 
     return {'parsed_entries' : parsed_entries, 'new_entries': new_entries, 'removed_entries': removed_count, 'created_aliases': created_aliases}
