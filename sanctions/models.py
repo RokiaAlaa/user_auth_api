@@ -1,5 +1,6 @@
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
+from django.conf import settings
 
 class SDNEntry(models.Model):
     uid = models.IntegerField(unique=True)
@@ -33,3 +34,9 @@ class SyncLog(models.Model):
     new_entries = models.IntegerField()
     removed_entries = models.IntegerField()
     new_aliases = models.IntegerField()
+
+class SearchLog(models.Model):
+    query = models.CharField(max_length=500)
+    results_count = models.IntegerField()
+    searched_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)

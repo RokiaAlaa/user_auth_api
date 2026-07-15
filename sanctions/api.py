@@ -1,17 +1,16 @@
-from ninja import Router, Query
+from ninja import Router
 from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models import Max, Q
-from .models import SDNEntry, Alias
-from .schemas import SearchResultSchema, MatchedAliasSchema
+from .models import SDNEntry, Alias, SearchLog
+from .schemas import SearchResultSchema
 from typing import List
 from django.core.cache import cache
-import hashlib
+from users.auth import jwt_auth
 
 router = Router()
 
 MIN_SIMILARITY = 0.3
 
-@router.get('/search', response=List[SearchResultSchema])
+@router.get('/search', response=List[SearchResultSchema], auth=jwt_auth)
 def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
 
     cache_key = f'search:{name.lower()}:{page}:{page_size}'
@@ -86,4 +85,5 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
 
     cache.set(cache_key, final_results, timeout=300)
 
+    SearchLog.objects.create(query=name, results_count=len(final_results), user=request.auth)
     return final_results
