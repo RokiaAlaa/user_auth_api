@@ -3,14 +3,16 @@ from django.db import models
 from django.conf import settings
 
 class SDNEntry(models.Model):
-    uid = models.IntegerField(unique=True)
+    uid = models.IntegerField()
     name = models.CharField(max_length=500)
     entity_type = models.CharField(max_length=100)
     program = models.CharField(max_length=200)
+    source = models.CharField(max_length=50, default='OFAC')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        unique_together = ('source', 'uid')
         indexes = [
             GinIndex(fields=['name'], name='sdn_name_trgm_idx', opclasses=['gin_trgm_ops'])
         ]
