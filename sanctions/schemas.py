@@ -11,4 +11,5 @@ class SearchResultSchema(Schema):
     entity_type: str
     program: str
     similarity: float
+    matched_field: str
     matched_aliases: List[MatchedAliasSchema] = []

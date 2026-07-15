@@ -34,6 +34,7 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
         results[entry.uid] = {
             'entry': entry,
             'similarity': entry.similarity,
+            'matched_field': 'name',
             'matched_aliases': []
         }
 
@@ -44,12 +45,14 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
             results[entry_uid] = {
             'entry': alias.entry,
             'similarity': alias.similarity,
+            'matched_field': f'alias: {alias.alias_name}',
             'matched_aliases': []
         }
         
         elif alias.similarity > results[entry_uid]['similarity']:
             
             results[entry_uid]['similarity'] = alias.similarity
+            results[entry_uid]['matched_field'] = f'alias: {alias.alias_name}'
 
         results[entry_uid]['matched_aliases'].append(alias)
 
@@ -68,6 +71,7 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
         entity_type = result['entry'].entity_type
         program = result['entry'].program
         similarity = result['similarity']
+        matched_field = result['matched_field']
         matched_aliases = []
 
         for alias in result['matched_aliases']:
@@ -80,6 +84,7 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
             'entity_type' : entity_type,
             'program' : program,
             'similarity' : similarity,
+            'matched_field': matched_field,
             'matched_aliases' : matched_aliases
         })
 
