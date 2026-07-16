@@ -8,6 +8,7 @@ class MatchedAliasSchema(Schema):
 class SearchResultSchema(Schema):
     uid: int
     name: str
+    source: str
     entity_type: str
     program: str
     similarity: float

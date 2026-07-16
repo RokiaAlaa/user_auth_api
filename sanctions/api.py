@@ -18,8 +18,9 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
     cached_result = cache.get(cache_key)
     
     if cached_result:
+        SearchLog.objects.create(query=name, results_count=len(cached_result), user=request.auth)
         return cached_result
-
+    
     entries = SDNEntry.objects.filter(name__trigram_similar=name).annotate(
         similarity=TrigramSimilarity('name', name)
     ).filter(similarity__gte=MIN_SIMILARITY)
@@ -35,6 +36,7 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
             'entry': entry,
             'similarity': entry.similarity,
             'matched_field': 'name',
+            'source': entry.source,
             'matched_aliases': []
         }
 
@@ -45,6 +47,7 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
             results[entry_uid] = {
             'entry': alias.entry,
             'similarity': alias.similarity,
+            'source': alias.entry.source,
             'matched_field': f'alias: {alias.alias_name}',
             'matched_aliases': []
         }
@@ -81,6 +84,7 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
         final_results.append({
             'uid' : uid,
             'name' : entry_name,
+            'source': result['source'],
             'entity_type' : entity_type,
             'program' : program,
             'similarity' : similarity,
