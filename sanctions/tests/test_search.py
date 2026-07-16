@@ -52,11 +52,8 @@ class SearchEndpointTests(TestCase):
             program='SDGT',
             phonetic_key=jellyfish.metaphone('Yusuf KARIM')
         )
-        print("STORED KEY:", repr(entry.phonetic_key))
-        print("QUERY KEY:", repr(jellyfish.metaphone('Youssef kareem')))
 
         response = self.client.get('/search?name=Youssef kareem', headers=self.headers)
-        print("RESPONSE:", response.json())
         self.assertEqual(response.status_code, 200)
 
         names = [r['name'] for r in response.json()]

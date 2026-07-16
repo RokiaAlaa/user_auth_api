@@ -46,7 +46,7 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
                          name=name, 
                          entity_type=entity_type, 
                          program=program, source='OFAC', 
-                         phonetic_key=jellyfish.metaphone(name))
+                         phonetic_key=jellyfish.metaphone(name)[:100])
         
         entries_to_create.append(entry)
 
@@ -92,7 +92,7 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
         alias = Alias(entry=entry, 
                       alias_type=row[2].strip(), 
                       alias_name=row[3].strip(), 
-                      phonetic_key=jellyfish.metaphone(row[3].strip()))
+                      phonetic_key=jellyfish.metaphone(row[3].strip())[:100])
 
         aliases_to_create.append(alias)
 
@@ -131,9 +131,14 @@ def sync_un_data(xml_text=None):
 
     for individual in individuals:
         uid = individual.find('DATAID').text 
-        first_name = individual.find('FIRST_NAME').text or ''
-        second_name = individual.find('SECOND_NAME').text or ''
-        program = individual.find('UN_LIST_TYPE').text or ''
+        first_name_el = individual.find('FIRST_NAME')
+        first_name = first_name_el.text if first_name_el is not None else ''
+
+        second_name_el = individual.find('SECOND_NAME')
+        second_name = second_name_el.text if second_name_el is not None else ''
+
+        program_el = individual.find('UN_LIST_TYPE')
+        program = program_el.text if program_el is not None else ''
 
         try:
             uid = int(uid)
@@ -147,7 +152,7 @@ def sync_un_data(xml_text=None):
                          name=name, 
                          entity_type='individual', 
                          program=program, source='UN', 
-                         phonetic_key=jellyfish.metaphone(name))
+                         phonetic_key=jellyfish.metaphone(name)[:100])
         
         entries_to_create.append(entry)
         
@@ -194,7 +199,7 @@ def sync_un_data(xml_text=None):
             new_alias = Alias(entry=entry, 
                               alias_type='aka', 
                               alias_name=alias_name, 
-                              phonetic_key=jellyfish.metaphone(alias_name))
+                              phonetic_key=jellyfish.metaphone(alias_name)[:100])
             
             aliases_to_create.append(new_alias)
 

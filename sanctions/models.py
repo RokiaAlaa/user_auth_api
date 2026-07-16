@@ -8,7 +8,7 @@ class SDNEntry(models.Model):
     entity_type = models.CharField(max_length=100)
     program = models.CharField(max_length=200)
     source = models.CharField(max_length=50, default='OFAC')
-    phonetic_key = models.CharField(max_length=50, blank=True, db_index=True)
+    phonetic_key = models.CharField(max_length=100, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -22,7 +22,7 @@ class Alias(models.Model):
     entry = models.ForeignKey(SDNEntry, related_name='aliases', on_delete=models.CASCADE)
     alias_type = models.CharField(max_length=50)
     alias_name = models.CharField(max_length=500)
-    phonetic_key = models.CharField(max_length=50, blank=True, db_index=True)
+    phonetic_key = models.CharField(max_length=100, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
