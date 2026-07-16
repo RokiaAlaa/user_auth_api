@@ -2,6 +2,7 @@ import requests
 from .models import SDNEntry, Alias, SyncLog
 import csv
 import io
+import jellyfish
 import xml.etree.ElementTree as ET
 
 SDN_URL = 'https://www.treasury.gov/ofac/downloads/sdn.csv'
@@ -41,7 +42,12 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
             continue
 
         parsed_uids.add(uid)
-        entry = SDNEntry(uid=uid, name=name, entity_type=entity_type, program=program, source='OFAC')
+        entry = SDNEntry(uid=uid, 
+                         name=name, 
+                         entity_type=entity_type, 
+                         program=program, source='OFAC', 
+                         phonetic_key=jellyfish.metaphone(name))
+        
         entries_to_create.append(entry)
 
     parsed_entries = len(entries_to_create)
@@ -83,7 +89,10 @@ def sync_sdn_data(sdn_text=None, alt_text=None):
             continue
 
         entry = entries_map[entnum]
-        alias = Alias(entry=entry, alias_type=row[2].strip(), alias_name=row[3].strip())
+        alias = Alias(entry=entry, 
+                      alias_type=row[2].strip(), 
+                      alias_name=row[3].strip(), 
+                      phonetic_key=jellyfish.metaphone(row[3].strip()))
 
         aliases_to_create.append(alias)
 
@@ -134,7 +143,12 @@ def sync_un_data(xml_text=None):
         name = (first_name + ' ' + second_name).strip()
 
         parsed_uids.add(uid)
-        entry = SDNEntry(uid=uid, name=name, entity_type='individual', program=program, source='UN')
+        entry = SDNEntry(uid=uid, 
+                         name=name, 
+                         entity_type='individual', 
+                         program=program, source='UN', 
+                         phonetic_key=jellyfish.metaphone(name))
+        
         entries_to_create.append(entry)
         
 
@@ -177,7 +191,11 @@ def sync_un_data(xml_text=None):
             alias_name = alias_name.text.strip()
             
 
-            new_alias = Alias(entry=entry, alias_type='aka', alias_name=alias_name)
+            new_alias = Alias(entry=entry, 
+                              alias_type='aka', 
+                              alias_name=alias_name, 
+                              phonetic_key=jellyfish.metaphone(alias_name))
+            
             aliases_to_create.append(new_alias)
 
 

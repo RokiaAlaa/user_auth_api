@@ -5,6 +5,8 @@ from .schemas import SearchResultSchema
 from typing import List
 from django.core.cache import cache
 from users.auth import jwt_auth
+import jellyfish
+from django.db.models import Q
 
 router = Router()
 
@@ -21,13 +23,23 @@ def search_sanctions(request, name: str, page: int = 1, page_size: int = 20):
         SearchLog.objects.create(query=name, results_count=len(cached_result), user=request.auth)
         return cached_result
     
-    entries = SDNEntry.objects.filter(name__trigram_similar=name).annotate(
-        similarity=TrigramSimilarity('name', name)
-    ).filter(similarity__gte=MIN_SIMILARITY)
+    phonetic_key = jellyfish.metaphone(name)
 
-    aliases = Alias.objects.select_related('entry').filter(alias_name__trigram_similar=name).annotate(
+    entries = SDNEntry.objects.filter(
+        Q(name__trigram_similar=name) | Q(phonetic_key=phonetic_key)
+        ).annotate(
+            similarity=TrigramSimilarity('name', name)
+        ).filter(
+            Q(similarity__gte=MIN_SIMILARITY) | Q(phonetic_key=phonetic_key)
+        )
+
+    aliases = Alias.objects.select_related('entry').filter(
+        Q(alias_name__trigram_similar=name) | Q(phonetic_key=phonetic_key)
+    ).annotate(
         similarity=TrigramSimilarity('alias_name', name)
-    ).filter(similarity__gte=MIN_SIMILARITY) 
+    ).filter(
+        Q(similarity__gte=MIN_SIMILARITY) | Q(phonetic_key=phonetic_key)
+    ) 
 
     results = {}
 

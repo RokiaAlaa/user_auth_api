@@ -4,12 +4,16 @@ from ..api import router, MIN_SIMILARITY
 from ..models import SDNEntry, Alias
 from django.contrib.auth import get_user_model
 from users.auth import create_access_token
+import jellyfish
+from django.core.cache import cache
 
 User = get_user_model()
 
 
 class SearchEndpointTests(TestCase):
     def setUp(self):
+        cache.clear()
+
         entry1 = SDNEntry.objects.create(uid=1, name='ABBAS Abu', entity_type='individual', program='SDGT')
         entry2 = SDNEntry.objects.create(uid=2, name='GHANIMAT Abd Al-Rahman', entity_type='individual', program='SDGT')
         Alias.objects.create(entry=entry2, alias_type='aka', alias_name='AL-ZUMAR Abbud')
@@ -39,3 +43,21 @@ class SearchEndpointTests(TestCase):
         response = self.client.get('/search?name=AL-ZUMAR Abbud', headers=self.headers)
         self.assertEqual(response.json()[0]['name'], 'GHANIMAT Abd Al-Rahman')
         self.assertEqual(response.json()[0]['matched_aliases'][0]['alias_name'], 'AL-ZUMAR Abbud')
+
+    def test_phonetic_match(self):
+        entry = SDNEntry.objects.create(
+            uid=10,
+            name='Yusuf KARIM',
+            entity_type='individual',
+            program='SDGT',
+            phonetic_key=jellyfish.metaphone('Yusuf KARIM')
+        )
+        print("STORED KEY:", repr(entry.phonetic_key))
+        print("QUERY KEY:", repr(jellyfish.metaphone('Youssef kareem')))
+
+        response = self.client.get('/search?name=Youssef kareem', headers=self.headers)
+        print("RESPONSE:", response.json())
+        self.assertEqual(response.status_code, 200)
+
+        names = [r['name'] for r in response.json()]
+        self.assertIn('Yusuf KARIM', names)
