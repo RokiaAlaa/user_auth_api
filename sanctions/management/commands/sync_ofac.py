@@ -1,0 +1,12 @@
+from django.core.management.base import BaseCommand
+from sanctions.services import sync_sdn_data
+
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        result = sync_sdn_data()
+
+        self.stdout.write(f"Parsed {result['parsed_entries']} individual entries from OFAC list")
+        self.stdout.write(f"Saved {result['new_entries']} new entries from OFAC list")
+        self.stdout.write(f"removed {result['removed_entries']} entries from OFAC list")
+        self.stdout.write(f"Saved {result['created_aliases']} new aliases from OFAC list")

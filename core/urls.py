@@ -19,10 +19,12 @@ from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
 from users.api import router as users_router
+from sanctions.api import router as sanctions_router
 
 api = NinjaAPI()
 
 api.add_router('/auth/', users_router)
+api.add_router('/sanctions/', sanctions_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
